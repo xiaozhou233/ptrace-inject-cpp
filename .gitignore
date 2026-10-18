@@ -1,0 +1,8 @@
+build/
+build-*/
+*.o
+*.a
+*.so
+ptrace-inject
+example_by_pid
+example_by_name

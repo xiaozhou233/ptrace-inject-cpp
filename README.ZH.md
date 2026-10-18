@@ -317,3 +317,8 @@ cat /tmp/ptrace_inject_sample.txt
 - **不 `dlclose`**：加载后的库会一直留在目标进程里，符合「注入」的预期。
 - **路径可见性**：`canonicalize` 发生在注入器进程，目标进程必须能访问同一路径
   （同一 mount namespace）。
+
+## 致谢
+
+本项目是 [Artemis21/ptrace-inject](https://github.com/Artemis21/ptrace-inject)
+的 C++ 移植版。整体思路、基于 shellcode 的注入方式以及很多设计细节都来自原项目。

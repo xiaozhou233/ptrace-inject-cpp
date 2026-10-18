@@ -353,3 +353,10 @@ the target process.
   the expected behaviour for injection.
 - **Path visibility**: `canonicalize` runs in the injector process, so the
   target must be able to access the same path (same mount namespace).
+
+## Acknowledgements
+
+This project is a C++ port of
+[Artemis21/ptrace-inject](https://github.com/Artemis21/ptrace-inject).
+The original idea, the shellcode-based injection approach, and much of the
+design come from that project.

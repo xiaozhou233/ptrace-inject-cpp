@@ -1,3 +1,10 @@
+/*
+ * ptrace_inject - C ABI for injecting shared libraries with ptrace.
+ *
+ * C++ port of the original Rust project:
+ * https://github.com/Artemis21/ptrace-inject
+ */
+
 #ifndef PTRACE_INJECT_H
 #define PTRACE_INJECT_H
 

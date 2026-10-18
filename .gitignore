@@ -3,6 +3,6 @@ build-*/
 *.o
 *.a
 *.so
-ptrace-inject
+ptrace-inject-cpp
 example_by_pid
 example_by_name

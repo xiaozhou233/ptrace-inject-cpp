@@ -1,15 +1,19 @@
-# ptrace_inject
+# ptrace-inject-cpp
 
-Inject a shared library (`.so`) into a running x86-64 Linux process with
-`ptrace`.
+Shared library injection for x86-64 Linux using ptrace, in C++.
+
+A C++ port of [Artemis21/ptrace-inject](https://github.com/Artemis21/ptrace-inject).
 
 > Chinese version: [README.ZH.md](README.ZH.md)
+
+The project is named `ptrace-inject-cpp`; the library artifact, header, and
+public API keep the name `ptrace_inject`.
 
 This repository provides:
 
 - **A C ABI library** `libptrace_inject` (implemented in C++, but the public
   header is directly usable from C and C++);
-- **A thin command line tool** `ptrace-inject`, plus a few example programs.
+- **A thin command line tool** `ptrace-inject-cpp`, plus a few example programs.
 
 The core flow is: attach to the target threads → remotely call
 `malloc` / `dlopen` / `free` inside the target → restore the original state →
@@ -41,7 +45,7 @@ CMakeLists.txt
 ## Building
 
 ```bash
-cd /home/xiaozhou/Development/inject
+cd /path/to/ptrace-inject-cpp
 
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j
@@ -57,7 +61,7 @@ cmake --build build-shared -j
 Optional switches:
 
 ```bash
--DPTRACE_INJECT_BUILD_CLI=OFF       # do not build ptrace-inject
+-DPTRACE_INJECT_BUILD_CLI=OFF       # do not build ptrace-inject-cpp
 -DPTRACE_INJECT_BUILD_EXAMPLES=OFF  # do not build the examples
 ```
 
@@ -66,7 +70,7 @@ Build artifacts:
 ```
 build/libptrace_inject.a          # static library (default)
 build-shared/libptrace_inject.so  # shared library (with BUILD_SHARED_LIBS=ON)
-build/ptrace-inject               # CLI
+build/ptrace-inject-cpp               # CLI
 build/example_by_pid              # C example
 build/example_by_name             # C++ example
 build/libptrace_inject_sample.so
@@ -135,24 +139,24 @@ No installation is required; point the compiler at this repository's
 C++ program:
 
 ```bash
-g++ app.cpp -I/path/to/inject/include \
-    /path/to/inject/build/libptrace_inject.a -ldl -o app
+g++ app.cpp -I/path/to/ptrace-inject-cpp/include \
+    /path/to/ptrace-inject-cpp/build/libptrace_inject.a -ldl -o app
 ```
 
 C program (the static library is C++ internally, so linking with `g++` is the
 easiest path):
 
 ```bash
-gcc -c app.c -I/path/to/inject/include -o app.o
-g++ app.o /path/to/inject/build/libptrace_inject.a -ldl -o app
+gcc -c app.c -I/path/to/ptrace-inject-cpp/include -o app.o
+g++ app.o /path/to/ptrace-inject-cpp/build/libptrace_inject.a -ldl -o app
 ```
 
 Shared library:
 
 ```bash
-gcc app.c -I/path/to/inject/include \
-    -L/path/to/inject/build-shared -lptrace_inject -ldl -lstdc++ -o app
-LD_LIBRARY_PATH=/path/to/inject/build-shared ./app
+gcc app.c -I/path/to/ptrace-inject-cpp/include \
+    -L/path/to/ptrace-inject-cpp/build-shared -lptrace_inject -ldl -lstdc++ -o app
+LD_LIBRARY_PATH=/path/to/ptrace-inject-cpp/build-shared ./app
 ```
 
 If your project also uses CMake, you can use `add_subdirectory`; no install
@@ -165,7 +169,7 @@ project(consumer LANGUAGES C CXX)
 
 set(PTRACE_INJECT_BUILD_CLI OFF CACHE BOOL "" FORCE)
 set(PTRACE_INJECT_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-add_subdirectory(/path/to/inject ptrace_inject)
+add_subdirectory(/path/to/ptrace-inject-cpp ptrace_inject)
 
 add_executable(app app.c)
 target_link_libraries(app PRIVATE ptrace_inject)
@@ -175,10 +179,10 @@ target_link_libraries(app PRIVATE ptrace_inject)
 
 ```bash
 # By PID
-./build/ptrace-inject -p <PID> /absolute/or/relative/path/to/library.so
+./build/ptrace-inject-cpp -p <PID> /absolute/or/relative/path/to/library.so
 
 # By executable name
-./build/ptrace-inject -n target-process ./library.so
+./build/ptrace-inject-cpp -n target-process ./library.so
 ```
 
 Example output:

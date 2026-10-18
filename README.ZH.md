@@ -1,13 +1,18 @@
-# ptrace_inject
+# ptrace-inject-cpp
 
 > English version: [README.md](README.md)
 
-用 `ptrace` 把 `.so` 注入正在运行的 x86-64 Linux 进程。
+一个用 `ptrace` 向 x86-64 Linux 进程注入共享库的 C++ 实现。
+
+本项目是 [Artemis21/ptrace-inject](https://github.com/Artemis21/ptrace-inject)
+的 C++ 移植版。
+
+项目名是 `ptrace-inject-cpp`；生成的库、头文件和公开 API 仍然叫 `ptrace_inject`。
 
 提供两样东西：
 
 - **一个 C ABI 库** `libptrace_inject`（实现是 C++，头文件可直接给 C/C++ 用）；
-- **一个薄命令行工具** `ptrace-inject`，以及几个示例程序。
+- **一个薄命令行工具** `ptrace-inject-cpp`，以及几个示例程序。
 
 核心流程：attach 目标线程 → 在目标里远程调用
 `malloc` / `dlopen` / `free` → 恢复现场 → detach。没有 spawn 模式，也没有
@@ -39,7 +44,7 @@ CMakeLists.txt
 ## 构建
 
 ```bash
-cd /home/xiaozhou/Development/inject
+cd /path/to/ptrace-inject-cpp
 
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j
@@ -55,7 +60,7 @@ cmake --build build-shared -j
 可选开关：
 
 ```bash
--DPTRACE_INJECT_BUILD_CLI=OFF       # 不构建 ptrace-inject
+-DPTRACE_INJECT_BUILD_CLI=OFF       # 不构建 ptrace-inject-cpp
 -DPTRACE_INJECT_BUILD_EXAMPLES=OFF  # 不构建示例
 ```
 
@@ -64,7 +69,7 @@ cmake --build build-shared -j
 ```
 build/libptrace_inject.a          # 静态库（默认）
 build-shared/libptrace_inject.so  # 共享库（BUILD_SHARED_LIBS=ON 时的目录）
-build/ptrace-inject               # CLI
+build/ptrace-inject-cpp               # CLI
 build/example_by_pid              # C 示例
 build/example_by_name             # C++ 示例
 build/libptrace_inject_sample.so
@@ -127,23 +132,23 @@ int main(void) {
 C++ 程序：
 
 ```bash
-g++ app.cpp -I/path/to/inject/include \
-    /path/to/inject/build/libptrace_inject.a -ldl -o app
+g++ app.cpp -I/path/to/ptrace-inject-cpp/include \
+    /path/to/ptrace-inject-cpp/build/libptrace_inject.a -ldl -o app
 ```
 
 C 程序（静态库内部是 C++，用 g++ 链接最省事）：
 
 ```bash
-gcc -c app.c -I/path/to/inject/include -o app.o
-g++ app.o /path/to/inject/build/libptrace_inject.a -ldl -o app
+gcc -c app.c -I/path/to/ptrace-inject-cpp/include -o app.o
+g++ app.o /path/to/ptrace-inject-cpp/build/libptrace_inject.a -ldl -o app
 ```
 
 共享库：
 
 ```bash
-gcc app.c -I/path/to/inject/include \
-    -L/path/to/inject/build-shared -lptrace_inject -ldl -lstdc++ -o app
-LD_LIBRARY_PATH=/path/to/inject/build-shared ./app
+gcc app.c -I/path/to/ptrace-inject-cpp/include \
+    -L/path/to/ptrace-inject-cpp/build-shared -lptrace_inject -ldl -lstdc++ -o app
+LD_LIBRARY_PATH=/path/to/ptrace-inject-cpp/build-shared ./app
 ```
 
 如果自己的项目也用 CMake，可以直接 `add_subdirectory`，不需要安装：
@@ -154,7 +159,7 @@ project(consumer LANGUAGES C CXX)
 
 set(PTRACE_INJECT_BUILD_CLI OFF CACHE BOOL "" FORCE)
 set(PTRACE_INJECT_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-add_subdirectory(/path/to/inject ptrace_inject)
+add_subdirectory(/path/to/ptrace-inject-cpp ptrace_inject)
 
 add_executable(app app.c)
 target_link_libraries(app PRIVATE ptrace_inject)
@@ -164,10 +169,10 @@ target_link_libraries(app PRIVATE ptrace_inject)
 
 ```bash
 # 按 PID
-./build/ptrace-inject -p <PID> /absolute/or/relative/path/to/library.so
+./build/ptrace-inject-cpp -p <PID> /absolute/or/relative/path/to/library.so
 
 # 按可执行文件名
-./build/ptrace-inject -n target-process ./library.so
+./build/ptrace-inject-cpp -n target-process ./library.so
 ```
 
 示例输出：

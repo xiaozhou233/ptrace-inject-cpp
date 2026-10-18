@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(ptrace_inject VERSION 1.0.0 LANGUAGES C CXX)
+project(ptrace_inject_cpp VERSION 1.0.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -53,7 +53,7 @@ set_target_properties(ptrace_inject PROPERTIES
 
 if(PTRACE_INJECT_BUILD_CLI)
   add_executable(ptrace_inject_cli src/main.cpp)
-  set_target_properties(ptrace_inject_cli PROPERTIES OUTPUT_NAME ptrace-inject)
+  set_target_properties(ptrace_inject_cli PROPERTIES OUTPUT_NAME ptrace-inject-cpp)
   target_link_libraries(ptrace_inject_cli PRIVATE ptrace_inject)
 endif()
 

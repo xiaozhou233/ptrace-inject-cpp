@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build (${{ matrix.os }}, ${{ matrix.cc }}, ${{ matrix.build_type }}, ${{ matrix.shared == 'ON' && 'shared' || 'static' }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-24.04, cc: gcc,   cxx: g++,     build_type: Release, shared: "OFF" }
+          - { os: ubuntu-24.04, cc: gcc,   cxx: g++,     build_type: Debug,   shared: "ON" }
+          - { os: ubuntu-24.04, cc: clang, cxx: clang++, build_type: Release, shared: "ON" }
+          - { os: ubuntu-24.04, cc: clang, cxx: clang++, build_type: Debug,   shared: "OFF" }
+          - { os: ubuntu-22.04, cc: gcc,   cxx: g++,     build_type: Release, shared: "OFF" }
+          - { os: ubuntu-22.04, cc: clang, cxx: clang++, build_type: Release, shared: "ON" }
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install compiler
+        if: matrix.cc == 'clang'
+        run: |
+          command -v clang >/dev/null && command -v clang++ >/dev/null && exit 0
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends clang
+
+      - name: Configure
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DBUILD_SHARED_LIBS=${{ matrix.shared }} \
+            -DCMAKE_C_FLAGS="-Werror" \
+            -DCMAKE_CXX_FLAGS="-Werror"
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ptrace-inject-${{ matrix.os }}-${{ matrix.cc }}-${{ matrix.build_type }}-${{ matrix.shared == 'ON' && 'shared' || 'static' }}
+          path: |
+            build/libptrace_inject.*
+            build/ptrace-inject-cpp
+            build/example_by_pid
+            build/example_by_name
+            build/libptrace_inject_sample.so
+            include/ptrace_inject.h
+          if-no-files-found: error
+          retention-days: 14

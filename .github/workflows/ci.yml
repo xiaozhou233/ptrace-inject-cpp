@@ -25,7 +25,7 @@ jobs:
           - { os: ubuntu-24.04, cc: clang, cxx: clang++, build_type: Release, shared: "ON" }
           - { os: ubuntu-24.04, cc: clang, cxx: clang++, build_type: Debug,   shared: "OFF" }
           - { os: ubuntu-22.04, cc: gcc,   cxx: g++,     build_type: Release, shared: "OFF" }
-          - { os: ubuntu-22.04, cc: clang, cxx: clang++, build_type: Release, shared: "ON" }
+          - { os: ubuntu-22.04, cc: gcc,   cxx: g++,     build_type: Release, shared: "ON"  }
 
     steps:
       - uses: actions/checkout@v4

@@ -14,47 +14,37 @@ concurrency:
 
 jobs:
   build:
-    name: build (${{ matrix.os }}, ${{ matrix.cc }}, ${{ matrix.build_type }}, ${{ matrix.shared == 'ON' && 'shared' || 'static' }})
+    name: build (${{ matrix.name }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-24.04, cc: gcc,   cxx: g++,     build_type: Release, shared: "OFF" }
-          - { os: ubuntu-24.04, cc: gcc,   cxx: g++,     build_type: Debug,   shared: "ON" }
-          - { os: ubuntu-24.04, cc: clang, cxx: clang++, build_type: Release, shared: "ON" }
-          - { os: ubuntu-24.04, cc: clang, cxx: clang++, build_type: Debug,   shared: "OFF" }
-          - { os: ubuntu-22.04, cc: gcc,   cxx: g++,     build_type: Release, shared: "OFF" }
-          - { os: ubuntu-22.04, cc: gcc,   cxx: g++,     build_type: Release, shared: "ON"  }
+          # Release assets: built on 22.04 (glibc 2.35) for wider compatibility.
+          - { name: ubuntu-22.04-gcc-static,   os: ubuntu-22.04, cc: gcc,   cxx: g++,     shared: "OFF" }
+          - { name: ubuntu-22.04-gcc-shared,   os: ubuntu-22.04, cc: gcc,   cxx: g++,     shared: "ON"  }
+          # Compiler coverage.
+          - { name: ubuntu-24.04-clang-static, os: ubuntu-24.04, cc: clang, cxx: clang++, shared: "OFF" }
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install compiler
-        if: matrix.cc == 'clang'
-        run: |
-          command -v clang >/dev/null && command -v clang++ >/dev/null && exit 0
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends clang
-
-      - name: Configure
+      - name: Build
         env:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
         run: |
           cmake -S . -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=${{ matrix.shared }} \
             -DCMAKE_C_FLAGS="-Werror" \
             -DCMAKE_CXX_FLAGS="-Werror"
-
-      - name: Build
-        run: cmake --build build --parallel
+          cmake --build build --parallel
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ptrace-inject-${{ matrix.os }}-${{ matrix.cc }}-${{ matrix.build_type }}-${{ matrix.shared == 'ON' && 'shared' || 'static' }}
+          name: ptrace-inject-${{ matrix.name }}
           path: |
             build/libptrace_inject.*
             build/ptrace-inject-cpp
